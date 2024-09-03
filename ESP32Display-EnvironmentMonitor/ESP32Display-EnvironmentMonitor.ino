@@ -1,5 +1,5 @@
 // In TFT eSPI's User_Setup.h, you must disable the TFT_BL for the backlight control to work
-
+// This is Dane's first commit to Github
 #include <TFT_eSPI.h>
 #include "FS.h"
 #include "SPIFFS.h"
