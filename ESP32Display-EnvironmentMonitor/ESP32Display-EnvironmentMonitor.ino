@@ -3,10 +3,10 @@
 #include <TFT_eSPI.h>
 #include "FS.h"
 #include "SPIFFS.h"
-#include <Adafruit_Sensor.h>
-#include <DHT.h>
-#include <DHT_U.h>
-
+//#include <Adafruit_Sensor.h>
+//#include <DHT.h>
+//#include <DHT_U.h>
+#include "TableHeap.h"
 #include "Free_Fonts.h"
 
 // Pins
@@ -15,7 +15,7 @@ const byte LEDG = 16;
 const byte LEDR = 4;
 const byte LCD_BL_PIN = 27;
 const byte LDR_PIN = 34;
-const byte DHT_PIN = 21;
+//const byte DHT_PIN = 21;
 
 // Heat index constants from https://en.wikipedia.org/wiki/Heat_index
 const float c1 = -8.78469475556;
@@ -29,7 +29,7 @@ const float c8 = 7.2546E-4;
 const float c9 = -3.582E-6;
 
 TFT_eSPI tft = TFT_eSPI();
-DHT_Unified dht(DHT_PIN, DHT11);
+//DHT_Unified dht(DHT_PIN, DHT11);
 
 #define TFT_GREY 0x2104 // Dark grey 16-bit colour
 
@@ -80,8 +80,9 @@ void drawStatHistogramFramework() {
 
 void drawStatHistogram() {
   for (uint8_t i = 0; i < MAX_DATA; i++) {
-    tft.fillRect(90 + i * 2, 218, 2, 318 - dataThi[i], TFT_BLACK);
-    tft.fillRect(90 + i * 2, 318 - dataThi[i], 2, 318, temperatureColors2(dataThi[i]));
+    //tft.fillRect(x,y)
+    tft.fillRect(45 + i * 2, 218, 2, 318 - dataThi[i], TFT_BLACK);
+    tft.fillRect(45 + i * 2, 318 - dataThi[i], 2, 318, temperatureColors2(dataThi[i]));
     tft.drawFastHLine(90 + i * 2, 318 - dataRH[i], 2, TFT_BLUE);
   }
 
@@ -208,7 +209,7 @@ void setup() {
   // Initialize LCD
   tft.begin();
   tft.invertDisplay(0);
-  tft.setRotation(3);
+  tft.setRotation(3); // This line messes with the rotation of the display
   //calibrateTouchscreen(false);
   tft.fillScreen(backcolor);
   tft.setTextColor(TFT_WHITE, backcolor);
@@ -217,8 +218,8 @@ void setup() {
   tft.setTextDatum(TL_DATUM);
 
   // Initialize sensor
-  dht.begin();
-
+  //dht.begin();
+  drawTable();
   clearDataPoints();
   drawStatHistogramFramework();
   drawStatHistogram();
@@ -231,23 +232,23 @@ void loop() {
   //ledcWrite(0, constrain(map(analogRead(LDR_PIN), 0, 800, 255, 5), 5, 255));
 
   // Get DHT11 sensor values
-  sensors_event_t event;
+  //sensors_event_t event;
 
-  dht.temperature().getEvent(&event);
-  float temp = event.temperature;
+ //dht.temperature().getEvent(&event);
+  float temp = 3;
   float temp2 = temp * temp;
 
-  dht.humidity().getEvent(&event);
-  float RH = event.relative_humidity;
+  //dht.humidity().(&event);
+  float RH = 2;
   float RH2 = RH * RH;
 
   // Compute heat index temperature equivalent
   float Thi = c1 + c2 * temp + c3 * RH + c4 * temp * RH + c5 * temp2 + c6 * RH2 + c7 * temp2 * RH + c8 * temp * RH2 + c9 * temp2 * RH2;
   
   // Draw UI elements
-  drawRingMeter(temp, 15,  55, 0,     0,   50,    "*C", temperatureColors(temp), TFT_GREY, TFT_WHITE, TFT_BLACK);
-  drawRingMeter(RH,    0, 100, 0,   100,   50,   "%RH", humidityColors(RH), TFT_GREY, TFT_WHITE, TFT_BLACK);
-  drawRingMeter(Thi,  15,  55, 160,   0,  100, "*C hi", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
+  // drawRingMeter(Thi, xval, yval, radius, xpos, ypos, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
+  drawRingMeter(Thi,  235,  145, 160,   0,  100, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
+  drawTable();
 
   if (sumThi > 0.0)
     sumThi += Thi;
@@ -268,5 +269,41 @@ void loop() {
     sumThi = Thi;
     drawStatHistogram();
     counter = 0;
+  }
+}
+
+// constants for the table
+const int numRows = 4;
+const int numCols = 2;
+const int cellWidth = 70; //wide
+const int cellHeight = 45; // tall
+const int startX = 10;
+const int startY = 10;
+
+void drawTable() {
+  tft.setTextSize(1);
+  tft.setTextColor(TFT_BLACK);
+  
+  // Draw table grid
+  for (int row = 0; row <= numRows; row++) {
+    int y = startY + row * cellHeight;
+    tft.drawLine(startX, y, startX + numCols * cellWidth, y, TFT_WHITE); // Draw horizontal lines
+  }
+  
+  for (int col = 0; col <= numCols; col++) {
+    int x = startX + col * cellWidth;
+    tft.drawLine(x, startY, x, startY + numRows * cellHeight, TFT_WHITE); // Draw vertical lines
+  }
+
+  // Add text to cells
+  for (int row = 0; row < numRows; row++) {
+    for (int col = 0; col < numCols; col++) {
+      int x = startX + col * cellWidth + 5; // Add some padding
+      int y = startY + row * cellHeight + 28; // Add some padding
+      tft.setCursor(x, y);
+      tft.setTextColor(TFT_WHITE); 
+      tft.printf("R%dC%d", row + 1, col + 1); // Example text: "R1C1", "R1C2", etc. 
+      // Temp, Humidity, VOC Index, PM (any)
+    }
   }
 }
