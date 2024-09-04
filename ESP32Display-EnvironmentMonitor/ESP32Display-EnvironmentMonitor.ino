@@ -61,7 +61,7 @@ void saveDataPoints(float RH, float Thi) {
   dataRH[MAX_DATA - 1] = (uint8_t) RH;
   dataThi[MAX_DATA - 1] = constrain(map((uint16_t) Thi * 10, 150, 550, 0, 100), 0, 100);    // From 15.0 to 55.0 deg C
 }
-
+/*
 void drawStatHistogramFramework() {
   tft.drawFastHLine(90, 217, 480, TFT_WHITE);
   tft.drawFastHLine(90, 319, 480, TFT_WHITE);
@@ -93,7 +93,7 @@ void drawStatHistogram() {
   // Draw warning line at 40 degrees
   tft.drawFastHLine(90, 256, 480, TFT_YELLOW);
 }
-
+*/
 int temperatureColors(int temp) {
   if (temp > 52)
     return 0xF800;      // Red
@@ -221,8 +221,6 @@ void setup() {
   //dht.begin();
   drawTable();
   clearDataPoints();
-  drawStatHistogramFramework();
-  drawStatHistogram();
 
   delay(1000);
 }
@@ -246,8 +244,8 @@ void loop() {
   float Thi = c1 + c2 * temp + c3 * RH + c4 * temp * RH + c5 * temp2 + c6 * RH2 + c7 * temp2 * RH + c8 * temp * RH2 + c9 * temp2 * RH2;
   
   // Draw UI elements
-  // drawRingMeter(Thi, xval, yval, radius, xpos, ypos, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
-  drawRingMeter(Thi,  235,  145, 160,   0,  100, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
+  // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
+  drawRingMeter(Thi,  235,  145, 260,   0,  110, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawTable();
 
   if (sumThi > 0.0)
@@ -261,25 +259,16 @@ void loop() {
     sumRH = RH;
 
   delay(1000);
-
-  // Update every minute
-  if (++counter >= 60) {
-    saveDataPoints(sumRH / 60.0, sumThi / 60.0);
-    sumRH = RH;
-    sumThi = Thi;
-    drawStatHistogram();
-    counter = 0;
-  }
 }
 
 // constants for the table
 const int numRows = 4;
 const int numCols = 2;
-const int cellWidth = 70; //wide
-const int cellHeight = 45; // tall
+const int cellWidth = 100; //wide
+const int cellHeight = 75; // tall
 const int startX = 10;
 const int startY = 10;
-
+String elements[4][2] = {{"Temp", "Val1"}, {"Humidity", "Val2"}, {"VOC", "Val3"}, {"PM", "Val4"}};
 void drawTable() {
   tft.setTextSize(1);
   tft.setTextColor(TFT_BLACK);
@@ -296,14 +285,17 @@ void drawTable() {
   }
 
   // Add text to cells
+  tft.setTextSize(1.5); 
   for (int row = 0; row < numRows; row++) {
     for (int col = 0; col < numCols; col++) {
       int x = startX + col * cellWidth + 5; // Add some padding
       int y = startY + row * cellHeight + 28; // Add some padding
       tft.setCursor(x, y);
-      tft.setTextColor(TFT_WHITE); 
-      tft.printf("R%dC%d", row + 1, col + 1); // Example text: "R1C1", "R1C2", etc. 
+      tft.setTextColor(TFT_WHITE);
+      tft.print(elements[row][col]);
+       // Example text: "R1C1", "R1C2", etc. // this is the line that is the issue
       // Temp, Humidity, VOC Index, PM (any)
     }
   }
+  tft.setTextSize(1);
 }
