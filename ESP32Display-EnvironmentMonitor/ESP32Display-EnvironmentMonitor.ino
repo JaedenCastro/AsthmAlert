@@ -1,5 +1,5 @@
 // In TFT eSPI's User_Setup.h, you must disable the TFT_BL for the backlight control to work
-// This is Dane's first commit to Github
+
 #include <TFT_eSPI.h>
 #include "FS.h"
 #include "SPIFFS.h"
@@ -8,6 +8,7 @@
 //#include <DHT_U.h>
 #include "TableHeap.h"
 #include "Free_Fonts.h"
+#include "BluetoothSerial.h"
 
 // Pins
 const byte LEDB = 17;
@@ -30,6 +31,7 @@ const float c9 = -3.582E-6;
 
 TFT_eSPI tft = TFT_eSPI();
 //DHT_Unified dht(DHT_PIN, DHT11);
+BluetoothSerial SerialBT;
 
 #define TFT_GREY 0x2104 // Dark grey 16-bit colour
 
@@ -223,6 +225,9 @@ void setup() {
   clearDataPoints();
   drawStatHistogramFramework();
   drawStatHistogram();
+
+  Serial.begin(115200);
+  SerialBT.begin("AsthmAlert"); //Bluetooth device name
 
   delay(1000);
 }
