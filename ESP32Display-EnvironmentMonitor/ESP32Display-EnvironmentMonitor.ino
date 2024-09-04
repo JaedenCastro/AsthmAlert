@@ -250,7 +250,7 @@ void loop() {
   
   // Draw UI elements
   // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
-  drawRingMeter(Thi,  235,  145, 260,   0,  110, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
+  drawRingMeter(Thi,  150,  145, 245,   0,  110, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawTable();
 
   if (sumThi > 0.0)
@@ -263,8 +263,6 @@ void loop() {
   else
     sumRH = RH;
 
-  SerialBT.print("75|8,7,6,5,4,3,2,1");
-  delay(1000);
   SerialBT.print("125|1,2,3,4,5,6,7,8");
   delay(1000);
 }
@@ -305,5 +303,8 @@ void drawTable() {
       // Temp, Humidity, VOC Index, PM (any)
     }
   }
+  tft.setTextSize(2); 
+  tft.setCursor(260, 275);
+  tft.print("Moderate");
   tft.setTextSize(1);
 }
