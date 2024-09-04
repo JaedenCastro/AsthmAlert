@@ -31,12 +31,9 @@ bool range_error = false;
 
 uint16_t backcolor = TFT_BLACK;
 
-const byte MAX_DATA = 195;
-int8_t dataThi[MAX_DATA];
-
 byte counter = 0;
-float sumThi = -40.0;
-float sumRH = -40.0;
+
+//float sumRH = -40.0;
 
 
 int temperatureColors(int temp) {
@@ -155,19 +152,19 @@ void loop() {
   
   // Draw UI elements
   // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
-  drawRingMeter(Thi,  150,  145, 245,   0,  110, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
+  drawRingMeter(0,  150,  145, 245,   0,  110, "*AQI", temperatureColors(0), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawTable();
 
   if (sumThi > 0.0)
     sumThi += Thi;
   else
     sumThi = Thi;
-
+/* IDK what RH does
   if (sumRH > 0.0)
     sumRH += RH;
   else
     sumRH = RH;
-
+*/
   SerialBT.print("125|1,2,3,4,5,6,7,8");
   delay(1000);
 }
