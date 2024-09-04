@@ -135,6 +135,12 @@ void setup() {
   //ledcWrite(0, 128);                // Turn on the backlight
   digitalWrite(LCD_BL_PIN, HIGH);
 
+  // Configure the LDR
+  pinMode(LDR_PIN, ANALOG);
+  analogReadResolution(12);         // 12 bits
+  analogSetWidth(12);               // 12 bits
+  analogSetPinAttenuation(LDR_PIN, ADC_6db);   // Maximum voltage of 1350mV
+
   // Initialize LCD
   tft.begin();
   tft.invertDisplay(0);
@@ -149,13 +155,13 @@ void setup() {
   // Initialize sensor
   //dht.begin();
   drawTable();
+  clearDataPoints();
 
   Serial.begin(115200);
   SerialBT.begin("AsthmAlert"); //Bluetooth device name
 
   delay(1000);
 }
-
 void loop() {
   // Draw UI elements
   // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
