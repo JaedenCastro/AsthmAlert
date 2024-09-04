@@ -127,6 +127,14 @@ void calibrateTouchscreen(bool recalibrate = false) {
 }*/
 
 void setup() {
+
+  // Configure backlight
+  pinMode(LCD_BL_PIN, OUTPUT);
+  //ledcSetup(0, 5000, 8);
+  //ledcAttachPin(LCD_BL_PIN, 0);
+  //ledcWrite(0, 128);                // Turn on the backlight
+  digitalWrite(LCD_BL_PIN, HIGH);
+
   // Initialize LCD
   tft.begin();
   tft.invertDisplay(0);
@@ -149,7 +157,6 @@ void setup() {
 }
 
 void loop() {
-  
   // Draw UI elements
   // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawRingMeter(0,  150,  145, 245,   0,  110, "*AQI", temperatureColors(0), TFT_GREY, TFT_WHITE, TFT_BLACK);
@@ -202,9 +209,10 @@ void drawTable() {
       tft.setCursor(x, y);
       tft.setTextColor(TFT_WHITE);
       tft.print(elements[row][col]);
-
     }
   }
+}
+void drawText() {
   tft.setTextSize(2); 
   tft.setCursor(260, 275);
   tft.print("Moderate");
