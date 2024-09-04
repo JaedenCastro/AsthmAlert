@@ -154,12 +154,12 @@ void loop() {
   // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawRingMeter(0,  150,  145, 245,   0,  110, "*AQI", temperatureColors(0), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawTable();
-
+/* IDK what RH and THI do
   if (sumThi > 0.0)
     sumThi += Thi;
   else
     sumThi = Thi;
-/* IDK what RH does
+ 
   if (sumRH > 0.0)
     sumRH += RH;
   else
