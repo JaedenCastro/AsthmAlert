@@ -8,6 +8,7 @@
 //#include <DHT_U.h>
 #include "TableHeap.h"
 #include "Free_Fonts.h"
+#include "BluetoothSerial.h"
 
 // Pins
 const byte LEDB = 17;
@@ -30,6 +31,7 @@ const float c9 = -3.582E-6;
 
 TFT_eSPI tft = TFT_eSPI();
 //DHT_Unified dht(DHT_PIN, DHT11);
+BluetoothSerial SerialBT;
 
 #define TFT_GREY 0x2104 // Dark grey 16-bit colour
 
@@ -222,6 +224,9 @@ void setup() {
   drawTable();
   clearDataPoints();
 
+  Serial.begin(115200);
+  SerialBT.begin("AsthmAlert"); //Bluetooth device name
+
   delay(1000);
 }
 
@@ -258,6 +263,9 @@ void loop() {
   else
     sumRH = RH;
 
+  SerialBT.print("75|8,7,6,5,4,3,2,1");
+  delay(1000);
+  SerialBT.print("125|1,2,3,4,5,6,7,8");
   delay(1000);
 }
 
