@@ -8,6 +8,9 @@
 #include "BluetoothSerial.h"
 
 // Pins
+const byte LEDB = 17;
+const byte LEDG = 16;
+const byte LEDR = 4;
 const byte LCD_BL_PIN = 27;
 const byte LDR_PIN = 34;
 
@@ -127,6 +130,14 @@ void calibrateTouchscreen(bool recalibrate = false) {
 }*/
 
 void setup() {
+  // Configure and turn off the RGB LED
+  pinMode(LEDR, OUTPUT);
+  pinMode(LEDG, OUTPUT);
+  pinMode(LEDB, OUTPUT);
+
+  digitalWrite(LEDR, HIGH);
+  digitalWrite(LEDG, HIGH);
+  digitalWrite(LEDB, HIGH);
 
   // Configure backlight
   pinMode(LCD_BL_PIN, OUTPUT);
@@ -155,13 +166,13 @@ void setup() {
   // Initialize sensor
   //dht.begin();
   drawTable();
-  clearDataPoints();
 
   Serial.begin(115200);
   SerialBT.begin("AsthmAlert"); //Bluetooth device name
 
   delay(1000);
 }
+
 void loop() {
   // Draw UI elements
   // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
