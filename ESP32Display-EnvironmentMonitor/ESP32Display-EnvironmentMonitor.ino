@@ -6,6 +6,8 @@
 #include "TableHeap.h"
 #include "Free_Fonts.h"
 #include "BluetoothSerial.h"
+#include <Arduino.h>
+#include "TAMC_GT911.h"
 
 // Pins
 const byte LEDB = 17;
@@ -13,6 +15,7 @@ const byte LEDG = 16;
 const byte LEDR = 4;
 const byte LCD_BL_PIN = 27;
 const byte LDR_PIN = 34;
+const byte MOTOR_PIN = 0; 
 
 // Heat index constants from https://en.wikipedia.org/wiki/Heat_index
 const float c1 = -8.78469475556;
@@ -25,10 +28,13 @@ const float c7 = 2.211732E-3;
 const float c8 = 7.2546E-4;
 const float c9 = -3.582E-6;
 
+// Initialize touchsreen and display
 TFT_eSPI tft = TFT_eSPI();
 BluetoothSerial SerialBT;
 
 #define TFT_GREY 0x2104 // Dark grey 16-bit colour
+#define VIBRATE_INTERVAL 1000 
+bool motor_state = LOW;
 
 bool range_error = false;
 
@@ -64,17 +70,6 @@ int temperatureColors2(int temp) {
   else
     return 0x07E0;      // Green
 }
-
-/*
-int humidityColors(int RH) {
-  if (RH > 60)
-    return 0xF81F;      // Purple
-  if (RH > 30)
-    return 0x07E0;      // Green
-  else
-    return 0xF800;      // Red
-}
-*/
 /* #I'm not gonna remove this yet, in case we do touchscreen at all
 void calibrateTouchscreen(bool recalibrate = false) {
   uint16_t calibrationData[5];
@@ -141,9 +136,6 @@ void setup() {
 
   // Configure backlight
   pinMode(LCD_BL_PIN, OUTPUT);
-  //ledcSetup(0, 5000, 8);
-  //ledcAttachPin(LCD_BL_PIN, 0);
-  //ledcWrite(0, 128);                // Turn on the backlight
   digitalWrite(LCD_BL_PIN, HIGH);
 
   // Configure the LDR
@@ -163,9 +155,15 @@ void setup() {
   tft.setTextSize(1);
   tft.setTextDatum(TL_DATUM);
 
-  // Initialize sensor
-  //dht.begin();
+  // Initialize the Motor
+  pinMode(MOTOR_PIN, OUTPUT);
+
+  // Draw UI elements
+  drawRingMeter(0,  150,  145, 245,   0,  110, "*AQI", temperatureColors(0), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawTable();
+  drawText();
+  
+  //Initialize Bluetooth and Touchscreen
 
   Serial.begin(115200);
   SerialBT.begin("AsthmAlert"); //Bluetooth device name
@@ -173,23 +171,24 @@ void setup() {
   delay(1000);
 }
 
+unsigned long previousMillis = 0;
 void loop() {
+
+  unsigned long currentMillis = millis(); //Initialize milils for vibration motor
   // Draw UI elements
   // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
+  drawText();
   drawRingMeter(0,  150,  145, 245,   0,  110, "*AQI", temperatureColors(0), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawTable();
-/* IDK what RH and THI do
-  if (sumThi > 0.0)
-    sumThi += Thi;
-  else
-    sumThi = Thi;
- 
-  if (sumRH > 0.0)
-    sumRH += RH;
-  else
-    sumRH = RH;
-*/
   SerialBT.print("125|1,2,3,4,5,6,7,8");
+  
+  if (currentMillis-previousMillis >= VIBRATE_INTERVAL){
+    previousMillis = currentMillis;
+    Serial.print("TEST \n");
+    motor_state = !motor_state;
+    digitalWrite(MOTOR_PIN, motor_state);
+  }
+
   delay(1000);
 }
 
