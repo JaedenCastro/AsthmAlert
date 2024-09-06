@@ -44,14 +44,6 @@ byte counter = 0;
 //float sumRH = -40.0;
 
 
-#define TOUCH_SDA  4
-#define TOUCH_SCL  5
-#define TOUCH_INT 25
-#define TOUCH_RST 26
-#define TOUCH_WIDTH  320
-#define TOUCH_HEIGHT 240
-
-
 int temperatureColors(int temp) {
   if (temp > 52)
     return 0xF800;      // Red
