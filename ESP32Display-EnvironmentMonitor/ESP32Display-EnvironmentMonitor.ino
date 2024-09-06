@@ -14,7 +14,7 @@ const byte LEDG = 16;
 const byte LEDR = 4;
 const byte LCD_BL_PIN = 27;
 const byte LDR_PIN = 34;
-const byte MOTOR_PIN = 35; 
+const byte MOTOR_PIN = 35; // not sure if this works or is the right pin; works on an uno
 
 // Heat index constants from https://en.wikipedia.org/wiki/Heat_index
 const float c1 = -8.78469475556;
@@ -32,7 +32,6 @@ TFT_eSPI tft = TFT_eSPI();
 BluetoothSerial SerialBT;
 
 #define TFT_GREY 0x2104 // Dark grey 16-bit colour
-#define VIBRATE_INTERVAL 1000 
 bool motor_state = LOW;
 
 bool range_error = false;
@@ -164,16 +163,15 @@ void setup() {
   drawText();
   
   //Initialize Bluetooth and Touchscreen
-
   Serial.begin(115200);
   SerialBT.begin("AsthmAlert"); //Bluetooth device name
   delay(1000);
 }
 
-unsigned long previousMillis = 0;
+uint32_t elapsed_time = 0;
+int vibration_duration = 1000;
 void loop() {
 
-  unsigned long currentMillis = millis(); //Initialize milils for vibration motor
   // Draw UI elements
   // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawText();
@@ -181,11 +179,11 @@ void loop() {
   drawTable();
   SerialBT.print("125|1,2,3,4,5,6,7,8");
   
-  if (currentMillis-previousMillis >= VIBRATE_INTERVAL){
-    previousMillis = currentMillis;
-    Serial.print("TEST \n");
+  if(millis() >= elapsed_time + vibration_duration) {
+    elapsed_time += vibration_duration;
     motor_state = !motor_state;
     digitalWrite(MOTOR_PIN, motor_state);
+    Serial.println("Flipping Vibration State")
   }
 
   delay(1000);
