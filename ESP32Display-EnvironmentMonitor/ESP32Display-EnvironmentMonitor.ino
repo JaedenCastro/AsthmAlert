@@ -7,7 +7,6 @@
 #include "Free_Fonts.h"
 #include "BluetoothSerial.h"
 #include <Arduino.h>
-#include <TAMC_GT911.h>
 
 // Pins
 const byte LEDB = 17;
@@ -15,7 +14,7 @@ const byte LEDG = 16;
 const byte LEDR = 4;
 const byte LCD_BL_PIN = 27;
 const byte LDR_PIN = 34;
-const byte MOTOR_PIN = 0; 
+const byte MOTOR_PIN = 35; 
 
 // Heat index constants from https://en.wikipedia.org/wiki/Heat_index
 const float c1 = -8.78469475556;
@@ -43,7 +42,7 @@ uint16_t backcolor = TFT_BLACK;
 byte counter = 0;
 
 //float sumRH = -40.0;
-#include "TAMC_GT911.h"
+
 
 #define TOUCH_SDA  4
 #define TOUCH_SCL  5
@@ -52,7 +51,6 @@ byte counter = 0;
 #define TOUCH_WIDTH  320
 #define TOUCH_HEIGHT 240
 
-TAMC_GT911 tp = TAMC_GT911(TOUCH_SDA, TOUCH_SCL, TOUCH_INT, TOUCH_RST, TOUCH_WIDTH, TOUCH_HEIGHT);
 
 int temperatureColors(int temp) {
   if (temp > 52)
@@ -177,10 +175,6 @@ void setup() {
 
   Serial.begin(115200);
   SerialBT.begin("AsthmAlert"); //Bluetooth device name
-
-  Serial.println("TAMC_GT911 Example: Ready");
-  tp.begin();
-  tp.setRotation(ROTATION_NORMAL);
   delay(1000);
 }
 
@@ -202,14 +196,6 @@ void loop() {
     digitalWrite(MOTOR_PIN, motor_state);
   }
 
-  tp.read();
-  if (tp.isTouched){
-    for (int i=0; i<tp.touches; i++){
-      Serial.print("Touch ");Serial.print(i+1);Serial.print(": ");;
-      Serial.print("  x: ");Serial.print(tp.points[i].x);
-      Serial.print("  y: ");Serial.print(tp.points[i].y);
-      Serial.print("  size: ");Serial.println(tp.points[i].size);
-      Serial.println(' ');
   delay(1000);
 }
 
