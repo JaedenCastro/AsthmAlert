@@ -16,6 +16,7 @@ const byte LEDR = 4;
 const byte LCD_BL_PIN = 27;
 const byte LDR_PIN = 34;
 const byte MOTOR_PIN = 35; 
+const byte MOTOR_PIN = 35; // not sure if this works or is the right pin; works on an uno
 
 // Initialize touchsreen, display and motor state
 TFT_eSPI tft = TFT_eSPI();
@@ -24,6 +25,7 @@ BluetoothSerial SerialBT;
 bool motor_state = LOW;
 
 #define TFT_GREY 0x2104 // Dark grey 16-bit colour
+
 #define VIBRATE_INTERVAL 1000 
 
 // Initialize Sen55
@@ -36,8 +38,6 @@ bool motor_state = LOW;
     (defined(BUFFER_LENGTH) && BUFFER_LENGTH >= MAXBUF_REQUIREMENT)
 #define USE_PRODUCT_INFO
 #endif
-
-SensirionI2CSen5x sen5x;
 
 // constants for the table
 const int numRows = 4;
@@ -343,21 +343,19 @@ void setup() {
 
 unsigned long previousMillis = 0;
 void loop() {
-  unsigned long currentMillis = millis(); //Initialize milils for vibration motor
   // Draw UI elements
   // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawText();
   drawRingMeter(0,  150,  145, 245,   0,  110, "*AQI", temperatureColors(0), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawTable();
   SerialBT.print("125|1,2,3,4,5,6,7,8");
-  
-  if (currentMillis-previousMillis >= VIBRATE_INTERVAL){
-    previousMillis = currentMillis;
-    Serial.print("TEST \n");
+    
+  if(millis() >= elapsed_time + vibration_duration) {
+    elapsed_time += vibration_duration;
     motor_state = !motor_state;
     digitalWrite(MOTOR_PIN, motor_state);
+    Serial.println("Flipping Vibration State")
   }
-
   operateSen55();
   delay(1000);
 }
