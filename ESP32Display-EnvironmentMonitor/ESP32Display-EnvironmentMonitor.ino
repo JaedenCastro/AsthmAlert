@@ -15,17 +15,17 @@ const byte LEDG = 16;
 const byte LEDR = 4;
 const byte LCD_BL_PIN = 27;
 const byte LDR_PIN = 34;
-const byte MOTOR_PIN = 35; 
 const byte MOTOR_PIN = 35; // not sure if this works or is the right pin; works on an uno
 
 // Initialize touchsreen, display and motor state
 TFT_eSPI tft = TFT_eSPI();
 uint16_t backcolor = TFT_BLACK;
+SensirionI2CSen5x sen5x;
 BluetoothSerial SerialBT;
 bool motor_state = LOW;
 
 #define TFT_GREY 0x2104 // Dark grey 16-bit colour
-
+#define vibration_duration 1000
 #define VIBRATE_INTERVAL 1000 
 
 // Initialize Sen55
@@ -340,8 +340,7 @@ void setup() {
   SerialBT.begin("AsthmAlert"); //Bluetooth device name
   delay(1000);
 }
-
-unsigned long previousMillis = 0;
+uint32_t elapsed_time = 0;
 void loop() {
   // Draw UI elements
   // drawRingMeter(Thi, xval, yval, x, y, r, "*AQI", temperatureColors(Thi), TFT_GREY, TFT_WHITE, TFT_BLACK);
@@ -354,7 +353,7 @@ void loop() {
     elapsed_time += vibration_duration;
     motor_state = !motor_state;
     digitalWrite(MOTOR_PIN, motor_state);
-    Serial.println("Flipping Vibration State")
+    Serial.println("Flipping Vibration State");
   }
   operateSen55();
   delay(1000);
