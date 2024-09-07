@@ -52,7 +52,7 @@
 #endif
 
 SensirionI2CSen5x sen5x;
-
+///////
 void printModuleVersions() {
     uint16_t error;
     char errorMessage[256];
@@ -99,7 +99,9 @@ void printModuleVersions() {
         Serial.println(hardwareMinor);
     }
 }
+///////
 
+///////
 void printSerialNumber() {
     uint16_t error;
     char errorMessage[256];
@@ -116,18 +118,22 @@ void printSerialNumber() {
         Serial.println((char*)serialNumber);
     }
 }
-
+///////
 void setup() {
+  Serial.begin(115200);
+  Wire.setPins(I2C_SDA, I2C_SCL); // SDA = 2, SCL = 3
+  Wire.begin();
+  setupSen55();
+}
 
-    Serial.begin(115200);
-    while (!Serial) {
-        delay(100);
-    }
-    Wire.setPins(I2C_SDA, I2C_SCL); // SDA = 2, SCL = 3
-    Wire.begin();
+void loop() {  
+  delay(1000);
+  operateSen55();
+}
 
-    sen5x.begin(Wire);
 
+void setupSen55(){
+  sen5x.begin(Wire);
     uint16_t error;
     char errorMessage[256];
     error = sen5x.deviceReset();
@@ -136,12 +142,12 @@ void setup() {
         errorToString(error, errorMessage, 256);
         Serial.println(errorMessage);
     }
-
-// Print SEN55 module information if i2c buffers are large enough
-#ifdef USE_PRODUCT_INFO
-    printSerialNumber();
-    printModuleVersions();
-#endif
+  ///////
+  // Print SEN55 module information if i2c buffers are large enough
+  #ifdef USE_PRODUCT_INFO
+      printSerialNumber();
+      printModuleVersions();
+  #endif
 
     // set a temperature offset in degrees celsius
     // Note: supported by SEN54 and SEN55 sensors
@@ -179,73 +185,5 @@ void setup() {
         Serial.print("Error trying to execute startMeasurement(): ");
         errorToString(error, errorMessage, 256);
         Serial.println(errorMessage);
-    }
-}
-
-void loop() {
-    uint16_t error;
-    char errorMessage[256];
-
-    delay(1000);
-
-    // Read Measurement
-    float massConcentrationPm1p0;
-    float massConcentrationPm2p5;
-    float massConcentrationPm4p0;
-    float massConcentrationPm10p0;
-    float ambientHumidity;
-    float ambientTemperature;
-    float vocIndex;
-    float noxIndex;
-
-    error = sen5x.readMeasuredValues(
-        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-        noxIndex);
-
-    if (error) {
-        Serial.print("Error trying to execute readMeasuredValues(): ");
-        errorToString(error, errorMessage, 256);
-        Serial.println(errorMessage);
-    } else {
-        Serial.print("MassConcentrationPm1p0:");
-        Serial.print(massConcentrationPm1p0);
-        Serial.print("\t");
-        Serial.print("MassConcentrationPm2p5:");
-        Serial.print(massConcentrationPm2p5);
-        Serial.print("\t");
-        Serial.print("MassConcentrationPm4p0:");
-        Serial.print(massConcentrationPm4p0);
-        Serial.print("\t");
-        Serial.print("MassConcentrationPm10p0:");
-        Serial.print(massConcentrationPm10p0);
-        Serial.print("\t");
-        Serial.print("AmbientHumidity:");
-        if (isnan(ambientHumidity)) {
-            Serial.print("n/a");
-        } else {
-            Serial.print(ambientHumidity);
-        }
-        Serial.print("\t");
-        Serial.print("AmbientTemperature:");
-        if (isnan(ambientTemperature)) {
-            Serial.print("n/a");
-        } else {
-            Serial.print(ambientTemperature);
-        }
-        Serial.print("\t");
-        Serial.print("VocIndex:");
-        if (isnan(vocIndex)) {
-            Serial.print("n/a");
-        } else {
-            Serial.print(vocIndex);
-        }
-        Serial.print("\t");
-        Serial.print("NoxIndex:");
-        if (isnan(noxIndex)) {
-            Serial.println("n/a");
-        } else {
-            Serial.println(noxIndex);
-        }
     }
 }
