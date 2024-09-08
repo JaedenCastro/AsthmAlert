@@ -185,68 +185,170 @@ void setupSen55(){
     }
 }
 
+float calcAqi(float concentration, String pollutant) {
+    float cLow[8], cHigh[8], iLow[8], iHigh[8];
+    
+    if (pollutant == "PM2.5") {
+        float cLowPm25[] = {0, 9.1, 35.5, 55.5, 125.5, 225.5, 325.5, 500.5};
+        float cHighPm25[] = {9.0, 35.4, 55.4, 125.4, 225.4, 325.4, 500.4, 1000.0};
+        float iLowPm25[] = {0, 51, 101, 151, 201, 301, 401, 501};
+        float iHighPm25[] = {50, 100, 150, 200, 300, 400, 500, 9999};
+        
+        memcpy(cLow, cLowPm25, sizeof(cLowPm25));
+        memcpy(cHigh, cHighPm25, sizeof(cHighPm25));
+        memcpy(iLow, iLowPm25, sizeof(iLowPm25));
+        memcpy(iHigh, iHighPm25, sizeof(iHighPm25));
+    }
+    else if (pollutant == "PM10") {
+        float cLowPm10[] = {0, 55, 155, 255, 355, 425, 505, 605};
+        float cHighPm10[] = {54, 154, 254, 354, 424, 504, 604, 999.0};
+        float iLowPm10[] = {0, 51, 101, 151, 201, 301, 401, 501};
+        float iHighPm10[] = {50, 100, 150, 200, 300, 400, 500, 9999};
+        
+        memcpy(cLow, cLowPm10, sizeof(cLowPm10));
+        memcpy(cHigh, cHighPm10, sizeof(cHighPm10));
+        memcpy(iLow, iLowPm10, sizeof(iLowPm10));
+        memcpy(iHigh, iHighPm10, sizeof(iHighPm10));
+    } else {
+        Serial.println("Invalid pollutant type");
+        return -1; // Error case
+    }
+
+    for (int i = 0; i < 8; i++) {
+        if (concentration >= cLow[i] && concentration <= cHigh[i]) {
+            float aqi = ((iHigh[i] - iLow[i]) / (cHigh[i] - cLow[i])) * (concentration - cLow[i]) + iLow[i];
+            return round(aqi);
+        }
+    }
+
+    if (concentration > cHigh[7]) {
+        float aqi = ((iHigh[7] - iLow[7]) / (cHigh[7] - cLow[7])) * (concentration - cLow[7]) + iLow[7];
+        return round(aqi); 
+    }
+    
+    Serial.println("Input concentration is below AQI scale");
+    return -1; // Error case
+}
+
 void operateSen55() {
-  uint16_t error;
-  char errorMessage[256];
-  float massConcentrationPm1p0;
-  float massConcentrationPm2p5;
-  float massConcentrationPm4p0;
-  float massConcentrationPm10p0;
-  float ambientHumidity;
-  float ambientTemperature;
-  float vocIndex;
-  float noxIndex;
+uint16_t error;
+    char errorMessage[256];
+    double tempAveThen = 0;
+    double tempAveNow = 0;
+    double tempChange;
 
-  error = sen5x.readMeasuredValues(
-      massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
-      massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
-      noxIndex);
+    // Read Measurement
+    float massConcentrationPm1p0;
+    float massConcentrationPm2p5;
+    float massConcentrationPm4p0;
+    float massConcentrationPm10p0;
+    float ambientHumidity;
+    float ambientTemperature;
+    float temperatureChange;
+    float vocIndex;
+    float noxIndex; 
 
-  if (error) {
-      Serial.print("Error trying to execute readMeasuredValues(): ");
-      errorToString(error, errorMessage, 256);
-      Serial.println(errorMessage);
-  } else {
-      Serial.print("MassConcentrationPm1p0:");
-      Serial.print(massConcentrationPm1p0);
-      Serial.print("\t");
-      Serial.print("MassConcentrationPm2p5:");
-      Serial.print(massConcentrationPm2p5);
-      Serial.print("\t");
-      Serial.print("MassConcentrationPm4p0:");
-      Serial.print(massConcentrationPm4p0);
-      Serial.print("\t");
-      Serial.print("MassConcentrationPm10p0:");
-      Serial.print(massConcentrationPm10p0);
-      Serial.print("\t");
-      Serial.print("AmbientHumidity:");
-      if (isnan(ambientHumidity)) {
-          Serial.print("n/a");
-      } else {
-          Serial.print(ambientHumidity);
-      }
-      Serial.print("\t");
-      Serial.print("AmbientTemperature:");
-      if (isnan(ambientTemperature)) {
-          Serial.print("n/a");
-      } else {
-          Serial.print(ambientTemperature);
-      }
-      Serial.print("\t");
-      Serial.print("VocIndex:");
-      if (isnan(vocIndex)) {
-          Serial.print("n/a");
-      } else {
-          Serial.print(vocIndex);
-      }
-      Serial.print("\t");
-      Serial.print("NoxIndex:");
-      if (isnan(noxIndex)) {
-          Serial.println("n/a");
-      } else {
-          Serial.println(noxIndex);
-      }
-  }
+    error = sen5x.readMeasuredValues(
+        massConcentrationPm1p0, massConcentrationPm2p5, massConcentrationPm4p0,
+        massConcentrationPm10p0, ambientHumidity, ambientTemperature, vocIndex,
+        noxIndex);
+
+    if (error) {
+        Serial.print("Error trying to execute readMeasuredValues(): ");
+        errorToString(error, errorMessage, 256);
+        Serial.println(errorMessage);
+    } else {}
+        if (isnan(vocIndex)) {
+            Serial.print("n/a");
+            SerialBT.print("n/a");
+        } else {
+            Serial.print(vocIndex);
+            SerialBT.print(vocIndex);
+        }
+        Serial.print(",");
+        SerialBT.print(",");
+        if (isnan(noxIndex)) {
+            Serial.print("n/a");
+            SerialBT.print("n/a");
+        } else {
+            Serial.print(noxIndex);
+            SerialBT.print(noxIndex);
+        }
+        Serial.print(",");
+        SerialBT.print(",");
+        if (isnan(ambientTemperature)) {
+            Serial.print("n/a");
+            SerialBT.print("n/a");
+        } else {
+            Serial.print(ambientTemperature);
+            SerialBT.print(ambientTemperature);
+
+            if (millis() - lastReport > reportingPeriod) {
+              // Add temperature data to tempArray
+              for (int i = 0; i < tempArrayLength - 1; i++) {
+                tempArray[i] = tempArray[i + 1];
+              }
+            tempArray[tempArrayLength - 1] = ambientTemperature;
+
+            // Get average temperature values for then (10 seconds ago) and now
+            for (int i = 0; i < 5; i++) {
+              tempAveThen += tempArray[i];
+              tempAveNow += tempArray[tempArrayLength - (i + 1)];
+            }
+            tempAveThen = tempAveThen/5;
+            tempAveNow = tempAveNow/5;
+
+            // Calculate average temperature change
+            tempChange = abs(tempAveNow - tempAveThen);
+
+            Serial.print(",");
+            SerialBT.print(",");
+            Serial.print(tempChange);
+            SerialBT.print(tempChange);
+        }
+        Serial.print(",");
+        SerialBT.print(",");
+        if (isnan(ambientHumidity)) {
+            Serial.print("n/a");
+            SerialBT.print("n/a");
+        } else {
+            Serial.print(ambientHumidity);
+            SerialBT.print(ambientHumidity);
+        }
+        Serial.print(",");
+        SerialBT.print(",");
+        Serial.print(massConcentrationPm1p0);
+        SerialBT.print(massConcentrationPm1p0);
+        Serial.print(",");
+        SerialBT.print(",");
+        Serial.print(massConcentrationPm2p5);
+        SerialBT.print(massConcentrationPm2p5);
+        Serial.print(",");
+        SerialBT.print(",");
+        Serial.print(massConcentrationPm4p0);
+        SerialBT.print(massConcentrationPm4p0);
+        Serial.print(",");
+        SerialBT.print(",");
+        Serial.println(massConcentrationPm10p0);
+        SerialBT.println(massConcentrationPm10p0);
+
+        delay(1000);
+
+        int aqiPm25 = calcAqi(massConcentrationPm2p5, "PM2.5");
+        int aqiPm10 = calcAqi(massConcentrationPm10p0, "PM10");
+
+        // Output the larger AQI value
+        if (aqiPm25 >= aqiPm10) {
+            Serial.print(aqiPm25);
+            SerialBT.print(aqiPm25);
+        } else {
+            Serial.print(aqiPm10);
+            SerialBT.print(aqiPm10);
+        }
+
+        Serial.print("|");
+        SerialBT.print("|");
+    }
 }
 int temperatureColors(int temp) {
   if (temp > 52)
