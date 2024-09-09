@@ -6,7 +6,7 @@ int drawRingMeter(int value, int vMin, int vMax, int x, int y, int r, const char
   y += r;
 
   // Convert value into a string
-  char buf[10];
+  char buf[15];
   byte len = value > 999 ? 5 : 3;
   
   dtostrf(value, len, 0, buf);
@@ -37,7 +37,7 @@ int drawRingMeter(int value, int vMin, int vMax, int x, int y, int r, const char
     tft.drawString(units, x, y + 15, 2);
 
   // Draw the ring
-  int vAngle = constrain(map(value, vMin, vMax, 30, 330), 30, 330);
+  int vAngle = 330;
 
   if (vAngle != 330)
     tft.drawSmoothArc(x, y, r - 2, r * 0.75, vAngle, 330, graphColor2, backColor);
