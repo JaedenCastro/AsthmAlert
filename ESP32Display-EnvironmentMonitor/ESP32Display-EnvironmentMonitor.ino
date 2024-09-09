@@ -27,6 +27,8 @@ bool motor_state = LOW;
 const int tempDeltaTime = 10; // Time interval (in seconds) between the two temperature averages being compared 
 const int tempArrayLength = (tempDeltaTime * 2) + 2;
 double tempArray[tempArrayLength];
+int aqiPm25;
+int aqiPm10;
 
 int reportingPeriod = 1000; 
 uint32_t lastReport = 0;
@@ -34,6 +36,7 @@ uint32_t lastReport = 0;
 #define TFT_GREY 0x2104 // Dark grey 16-bit colour
 #define vibration_duration 1000
 #define VIBRATE_INTERVAL 1000 
+
 
 // Initialize Sen55
 #define MAXBUF_REQUIREMENT 48
@@ -229,7 +232,7 @@ float calcAqi(float concentration, String pollutant) {
     }
 
     if (concentration > cHigh[7]) {
-        float aqi = ((iHigh[7] - iLow[7]) / (cHigh[7] - cLow[7])) * (concentration - cLow[7]) + iLow[7];
+        float aqi = ((iHigh[7] - iLow[7]) / (cHigh[7] - cLow[7])) * (concentration - cLow[7]) + iLow[7];                                                          
         return round(aqi); 
     }
     
@@ -341,8 +344,8 @@ uint16_t error;
 
         delay(1000);
 
-        int aqiPm25 = calcAqi(massConcentrationPm2p5, "PM2.5");
-        int aqiPm10 = calcAqi(massConcentrationPm10p0, "PM10");
+        aqiPm25 = calcAqi(massConcentrationPm2p5, "PM2.5");
+        aqiPm10 = calcAqi(massConcentrationPm10p0, "PM10");
 
         // Output the larger AQI value
         if (aqiPm25 >= aqiPm10) {
@@ -464,6 +467,8 @@ void loop() {
     digitalWrite(MOTOR_PIN, motor_state);
     Serial.println("Flipping Vibration State");
   }
+  Serial.println(aqiPm25);
+  Serial.println(aqiPm10);
   operateSen55();
   delay(1000);
 }
