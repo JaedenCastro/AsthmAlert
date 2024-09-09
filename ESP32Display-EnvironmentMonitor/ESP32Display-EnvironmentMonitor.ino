@@ -32,6 +32,7 @@ int reportingPeriod = 1000;
 uint32_t lastReport = 0;
 int aqiPm25 = 0;
 int aqiPm10 = 0;
+int aqi = 0;
 
 #define TFT_GREY 0x2104 // Dark grey 16-bit colour
 #define vibration_duration 1000  
@@ -111,30 +112,28 @@ void drawTable() {
 }
 // This is created in reference to the wikipedia AQI thresholds
 // See https://en.wikipedia.org/wiki/Air_quality_index
-void updateBottomText(int pm2p5, int pm10) {  
+void updateBottomText(int aqi) {  
   tft.setTextSize(2); 
   tft.setCursor(260, 275);
-  if (pm2p5 >= 225 || pm10 >= 425) 
+  if (aqi >= 300) 
     tft.setCursor(260, 275);
     tft.print("Hazardous");
-  if (pm2p5 >= 125 || pm10 >= 355)
+  if (aqi >= 200)
     tft.setCursor(260, 275);
     tft.setTextSize(1);
     tft.print("Very Unhealthy");
-    tft.setTextSize(2); 
-  if (pm2p5 >= 55 || pm10 >= 155)
+  if (aqi >= 150)
     tft.setCursor(260, 275);
     tft.print("Unhealthy");
-  if (pm2p5 >= 35 || pm10 >= 155)
+  if (aqi >= 100)
     tft.setCursor(260, 275);
     tft.print("Unhealthy");
-  if (pm2p5 >= 9 || pm10 >= 55) {
+  if (aqi >= 50) {
     tft.setCursor(260, 275);
     tft.print("Moderate");
   } else {
     tft.setCursor(260, 275);
-    tft.print("Good");
-  tft.setTextSize(1); 
+    tft.print("Good");  
   }
 }
 
@@ -388,9 +387,11 @@ uint16_t error;
 
         // Output the larger AQI value
         if (aqiPm25 >= aqiPm10) {
+            aqi = aqiPm25;
             Serial.print(aqiPm25);
             SerialBT.print(aqiPm25);
         } else {
+            aqi = aqiPm10;
             Serial.print(aqiPm10);
             SerialBT.print(aqiPm10);
         }
@@ -402,31 +403,31 @@ uint16_t error;
 // This is created in reference to the wikipedia AQI thresholds
 // See https://en.wikipedia.org/wiki/Air_quality_index
 
-int aqiColors(int pm2p5, int pm10) { 
-  if (pm2p5 >= 225 || pm10 >= 425) 
+int aqiColors(int aqi) { 
+  if (aqi >= 300) 
     return 0x8024;      // Maroon
-  if (pm2p5 >= 125 || pm10 >= 355)
+  if (aqi >= 200)
     return 0x91F2;      // Purple
-  if (pm2p5 >= 55 || pm10 >= 155)
+  if (aqi >= 150)
     return 0xF820;      // Red
-  if (pm2p5 >= 35 || pm10 >= 155)
+  if (aqi >= 100)
     return 0xFC00;      // Orange
-  if (pm2p5 >= 9 || pm10 >= 55)
+  if (aqi >= 50)
     return 0xFFE0;      // Yellow
   else
     return 0x07E0;      // Green
 }
 
-void drawText(const char* text, int x, int y, int textSize = 1, uint16_t textColor = TFT_WHITE, uint16_t backColor = TFT_BLACK) {
-    // Set the text size and color
-    tft.setTextSize(textSize);
-    tft.setTextColor(textColor, backColor);
-    tft.setTextDatum(MC_DATUM); // Center text
+// void drawText(const char* text, int x, int y, int textSize = 1, uint16_t textColor = TFT_WHITE, uint16_t backColor = TFT_BLACK) {
+//     // Set the text size and color
+//     tft.setTextSize(textSize);
+//     tft.setTextColor(textColor, backColor);
+//     tft.setTextDatum(MC_DATUM); // Center text
 
-    // Draw the text
-    tft.setTextPadding(0);
-    tft.drawString(text, x, y);
-}
+//     // Draw the text
+//     tft.setTextPadding(0);
+//     tft.drawString(text, x, y);
+// }
 
 void printSerialNumber() {
     uint16_t error;
@@ -499,9 +500,9 @@ void setup() {
   pinMode(MOTOR_PIN, OUTPUT);
 
   // Draw UI elements
-  drawRingMeter(0,  150,  145, 245,   0,  110, "*AQI", aqiColors(0,0), TFT_GREY, TFT_WHITE, TFT_BLACK);
+  drawRingMeter(0,  150,  145, 245,   0,  110, "*AQI", aqiColors(0), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawTable();
-  updateBottomText((int)aqiPm25, (int)aqiPm10);
+  updateBottomText(aqi);
   
   //Initialize Bluetooth and Touchscreen
   Serial.begin(115200);
@@ -516,8 +517,8 @@ uint32_t elapsed_time = 0;
 void loop() {
   // Draw UI elements
   // int value, int vMin, int vMax, int x, int y, int r, const char *units, int graphColor (current color), int graphColor2 (non lit up part), int textColor, int backColor
-  updateBottomText((int)aqiPm25, (int)aqiPm10);
-  drawRingMeter(aqiPm25,  150,  145, 245,   0,  110, "*AQI", aqiColors((int)aqiPm25, (int)aqiPm10), TFT_GREY, TFT_WHITE, TFT_BLACK);
+  updateBottomText(aqi);
+  drawRingMeter(aqi,  150,  145, 245,   0,  110, "*AQI", aqiColors(aqi), TFT_GREY, TFT_WHITE, TFT_BLACK);
   drawTable();
     
   if(millis() >= elapsed_time + vibration_duration) {
@@ -526,7 +527,7 @@ void loop() {
     digitalWrite(MOTOR_PIN, motor_state);
   }
   operateSen55();
-  Serial.println(aqiPm25);
-  Serial.println(aqiPm10);
+  // Serial.println(aqiPm25);
+  // Serial.println(aqiPm10);
   //delay(1000);
 }
