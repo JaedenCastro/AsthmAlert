@@ -453,7 +453,7 @@ void drawText(const char* text, int x, int y, int textSize = 1, uint16_t textCol
     int16_t textHeight = tft.fontHeight();
 
     // Erase the previous text area
-    tft.fillRect(x - textWidth / 2, y - textHeight / 2, textWidth, textHeight, backColor);
+    tft.fillRect(x - textWidth / 2, y - textHeight / 2, textWidth, textHeight, backColor); // Centered at the center of the text, uses width and height/2
 
     // Set the text size and color
     tft.setTextSize(textSize);
