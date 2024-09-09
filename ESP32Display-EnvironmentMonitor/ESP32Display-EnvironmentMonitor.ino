@@ -24,6 +24,13 @@ SensirionI2CSen5x sen5x;
 BluetoothSerial SerialBT;
 bool motor_state = LOW;
 
+const int tempDeltaTime = 10; // Time interval (in seconds) between the two temperature averages being compared 
+const int tempArrayLength = (tempDeltaTime * 2) + 2;
+double tempArray[tempArrayLength];
+
+int reportingPeriod = 1000; 
+uint32_t lastReport = 0;
+
 #define TFT_GREY 0x2104 // Dark grey 16-bit colour
 #define vibration_duration 1000
 #define VIBRATE_INTERVAL 1000 
