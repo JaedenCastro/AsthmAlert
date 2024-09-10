@@ -76,10 +76,10 @@ char pm10Str[10];
 
 // Create the 2D array to hold the string representations
 const char* elements[4][2] = {
-    {"VOC", vocIndexStr},
-    {"NOx", noxIndexStr},
-    {"PM 2.5", pm2p5Str},
-    {"PM 10", pm10Str}
+    // {"VOC", vocIndexStr},
+    // {"NOx", noxIndexStr},
+    // {"PM 2.5", pm2p5Str},
+    // {"PM 10", pm10Str}
 };
 
 // Temp, Humidity, VOC Index, PM (any)
@@ -110,30 +110,56 @@ void drawTable() {
     }
   }
 }
+
+void drawText(const char* text, int x, int y, int textSize, uint16_t textColor = TFT_WHITE, uint16_t backColor = TFT_BLACK) {
+    // Set the text size and color
+    tft.setTextSize(textSize);
+    tft.setTextColor(textColor, backColor);
+    tft.setTextDatum(TL_DATUM); // top left
+
+    // Calculate the text width and height
+    int16_t textWidth = tft.textWidth(text);
+    int16_t textHeight = tft.fontHeight();
+
+    // Erase the previous text area
+    tft.fillRect(x, y, textWidth, textHeight, backColor); // Centered at the center of the text, uses width and height/2
+
+    // Draw the new text
+    tft.drawString(text, x, y);
+}
+
+void drawBotText(const char* text, int x = 350, int y = 275, int textSize = 2, uint16_t textColor = TFT_WHITE, uint16_t backColor = TFT_BLACK) {
+    // Set the text size and color
+    tft.setTextSize(textSize);
+    tft.setTextColor(textColor, backColor);
+    tft.setTextDatum(MC_DATUM); // mid center
+
+    // Calculate the text width and height
+    // int16_t textWidth = tft.textWidth(text);
+    int16_t textHeight = tft.fontHeight();
+
+    // Erase the previous text area
+    tft.fillRect(230, y - textHeight / 2, 240, textHeight, backColor); // Centered at the center of the text, uses width and height/2
+
+    // Draw the new text
+    tft.drawString(text, x, y);
+}
+
 // This is created in reference to the wikipedia AQI thresholds
 // See https://en.wikipedia.org/wiki/Air_quality_index
 void updateBottomText(int aqi) {  
-  tft.setTextSize(2); 
-  tft.setCursor(260, 275);
   if (aqi >= 300) 
-    tft.setCursor(260, 275);
-    tft.print("Hazardous");
+    drawBotText("Hazardous");
   if (aqi >= 200)
-    tft.setCursor(260, 275);
-    tft.setTextSize(1);
-    tft.print("Very Unhealthy");
+    drawBotText("Unhealthy");
   if (aqi >= 150)
-    tft.setCursor(260, 275);
-    tft.print("Unhealthy");
+    drawBotText("Unhealthy");
   if (aqi >= 100)
-    tft.setCursor(260, 275);
-    tft.print("Unhealthy");
+    drawBotText("Unhealthy");
   if (aqi >= 50) {
-    tft.setCursor(260, 275);
-    tft.print("Moderate");
+    drawBotText("Moderate");
   } else {
-    tft.setCursor(260, 275);
-    tft.print("Good");  
+    drawBotText("Good");
   }
 }
 
@@ -448,23 +474,6 @@ void printSerialNumber() {
 // 1. Fill a rectangle  using black
 // 2. Draw Text 1
 
-void drawText(const char* text, int x, int y, int textSize = 1, uint16_t textColor = TFT_WHITE, uint16_t backColor = TFT_BLACK) {
-    // Calculate the text width and height
-    int16_t textWidth = tft.textWidth(text);
-    int16_t textHeight = tft.fontHeight();
-
-    // Erase the previous text area
-    tft.fillRect(x - textWidth / 2, y - textHeight / 2, textWidth, textHeight, backColor); // Centered at the center of the text, uses width and height/2
-
-    // Set the text size and color
-    tft.setTextSize(textSize);
-    tft.setTextColor(textColor, backColor);
-    tft.setTextDatum(MC_DATUM); // Center text
-
-    // Draw the new text
-    tft.drawString(text, x, y);
-}
-
 void setup() {
   // Configure and turn off the RGB LED
   pinMode(LEDR, OUTPUT);
@@ -527,7 +536,16 @@ void loop() {
     digitalWrite(MOTOR_PIN, motor_state);
   }
   operateSen55();
+
+  drawText("VOC", 25, 25, 1);
+  drawText("NOx", 25, 100, 1);
+  drawText("PM 2.5", 25, 175, 1);
+  drawText("PM 10", 25, 250, 1);
+
+  drawText(vocIndexStr, 120, 25, 1);
+  drawText(noxIndexStr, 120, 100, 1);
+  drawText(pm2p5Str, 120, 175, 1);
+  drawText(pm10Str, 120, 250, 1);
   // Serial.println(aqiPm25);
   // Serial.println(aqiPm10);
-  //delay(1000);
 }

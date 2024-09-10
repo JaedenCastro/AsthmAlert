@@ -18,6 +18,8 @@ int drawRingMeter(int value, int vMin, int vMax, int x, int y, int r, const char
   tft.setTextColor(textColor, backColor);
   tft.setTextDatum(MC_DATUM);
   
+  tft.fillRect(330, 90, 70, 30, backColor);
+
   if (r > 84) {   // Large meter: 31 pixels per digit at Font 6
     tft.setTextPadding(93);
     tft.drawString(buf, x, y, 6);
